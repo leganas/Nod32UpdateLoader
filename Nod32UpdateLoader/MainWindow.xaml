@@ -6,7 +6,10 @@
         xmlns:local="clr-namespace:Nod32UpdateLoader"
         mc:Ignorable="d"
         Title="MainWindow" Height="350" Width="525">
+    <Window.DataContext>
+        <local:MainWindowDataContainer/>
+    </Window.DataContext>
     <Grid>
-        
+        <TextBlock Name="MyHtmlText" HorizontalAlignment="Left" TextWrapping="Wrap" Text="{Binding Text.Txt}" VerticalAlignment="Top"/>
     </Grid>
 </Window>
