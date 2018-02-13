@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -11,6 +12,7 @@ using AngleSharp.Dom;
 using AngleSharp.Dom.Html;
 using AngleSharp.Extensions;
 using AngleSharp.Parser.Html;
+using Ionic.Zip;
 
 namespace Nod32UpdateLoader
 {
@@ -19,6 +21,7 @@ namespace Nod32UpdateLoader
     public class MainWindowDataContainer
     {
         public TextHttp Text { get; set; } = new TextHttp();
+        public String zipfolder = "extract";
 
         public MainWindowDataContainer()
         {
@@ -26,9 +29,57 @@ namespace Nod32UpdateLoader
             
         }
 
+        SynchronizationContext context;
+
+        private void unZip(String filename, String path)
+        {
+            var zip = ZipFile.Read(filename);
+            zip.ExtractProgress += zip_ExtractProgress;
+//            progressBar1.Maximum = zip.Count;
+
+            context = SynchronizationContext.Current;
+            new Thread(
+                delegate () {
+                    ExtractAsync(path, zip);
+                }).Start();
+        }
+
+        /// <summary>
+        /// Метод распаковки всех файлов в указанную папку.
+        /// </summary>
+        /// <param name="to">Папка в которую будет распакован архив.</param>
+        /// <param name="zip">Экземпляр класса ZipFile, из которого нужно произвести распаковку.</param>
+        void ExtractAsync(string to, ZipFile zip)
+        {
+            zip.ExtractAll(to, ExtractExistingFileAction.OverwriteSilently);
+            zip.Dispose();
+        }
+
+        void zip_ExtractProgress(object sender, ExtractProgressEventArgs e)
+        {
+            switch (e.EventType)
+            {
+                case ZipProgressEventType.Extracting_AfterExtractEntry:
+                    if (context != null)
+                        context.Send(
+                            (o) => {
+                               
+                                Text.Txt = string.Format(
+                                    "Unpacking {0} from {1}",
+                                    e.EntriesExtracted,
+                                    e.EntriesTotal
+                                );
+//                                progressBar1.Value = e.EntriesExtracted;
+                            },
+                            null
+                        );
+                    break;
+            }
+        }
+
         private void getHttp(String url)
         {
-            String result = "Проверка";
+            String result = "Start";
             new Thread(() =>
             {
                 using (var client = new WebClient())
@@ -50,17 +101,24 @@ namespace Nod32UpdateLoader
 
                     using (var client = new WebClient())
                     {
+                        // Обновление прогресса загрузки файла
                         client.DownloadProgressChanged += (s, e) =>
                         {
-                            Text.Txt = Convert.ToString(e.ProgressPercentage);
+                            Text.Txt = Convert.ToString("Download nod32 update virus data base : " + e.ProgressPercentage + "%");
                         };
+
+                        // Действия после того как закачка файла завершена
                         client.DownloadFileCompleted += (s, e) =>
                         {
                             Text.Txt = "Download complite";
-                            // any other code to process the file
+                            try
+                            {
+                                DirectoryInfo directoryinfo = new DirectoryInfo(zipfolder);
+                                if (directoryinfo.Exists) directoryinfo.Delete(true);
+                                unZip(@"offline_update_ess.zip", zipfolder);
+                            }
+                            catch (System.IO.IOException ee) { Console.WriteLine(ee.Message); }
                         };
-
-
                         String encoded = System.Convert.ToBase64String(System.Text.Encoding.GetEncoding("ISO-8859-1")
                             .GetBytes($"{login.Replace(" ", string.Empty)}:{pass.Replace(" ", string.Empty)}"));
                         client.Headers.Add("Authorization: Basic " + encoded);
