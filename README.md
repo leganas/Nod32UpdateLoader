@@ -1,3 +1,4 @@
-# MyFirstWebAPGradle
+# Nod32UpdateLoader
 
-Java EE приложение авторизации с использованием MySQL базы данных с логинами и паролями
+Auto parse login/pass and Loading offline virus base update.
+

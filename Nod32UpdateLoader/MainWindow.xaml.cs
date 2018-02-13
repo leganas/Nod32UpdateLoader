@@ -27,7 +27,7 @@ namespace Nod32UpdateLoader
         {
             InitializeComponent();
             MainWindowDataContainer = (MainWindowDataContainer)DataContext;
-            if (Setting.current.HidenStart) this.Hide();
+            if (Setting.current.HidenStart) this.WindowState = WindowState.Minimized;
         }
 
         private void NotifyIconExit_Click(object sender, RoutedEventArgs e)

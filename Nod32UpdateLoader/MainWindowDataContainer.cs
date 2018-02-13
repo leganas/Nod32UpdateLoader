@@ -93,14 +93,23 @@ namespace Nod32UpdateLoader
                 Application.Current.Dispatcher.BeginInvoke(new Action(() =>
                 {
                     Text.Txt = result;
+                    String login = "";
+                    String pass = "";
 
-                    var parser = new HtmlParser();
-                    IHtmlDocument document = parser.Parse(result);
-
-                    IHtmlCollection<IElement> collection = document.GetElementsByClassName("spoiler-body");
-                    var str = collection.ElementAt(0).ChildNodes[1];
-                    String login = str.ChildNodes[1].TextContent;
-                    String pass = str.ChildNodes[5].TextContent;
+                    try
+                    {
+                        var parser = new HtmlParser();
+                        IHtmlDocument document = parser.Parse(result);
+                        IHtmlCollection<IElement> collection = document.GetElementsByClassName("spoiler-body");
+                        var str = collection.ElementAt(0).ChildNodes[1];
+                        login = str.ChildNodes[1].TextContent;
+                        pass = str.ChildNodes[5].TextContent;
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e);
+                        Environment.Exit(0);
+                    }
 
                     using (var client = new WebClient())
                     {
@@ -121,12 +130,24 @@ namespace Nod32UpdateLoader
                                 //if (directoryinfo.Exists) directoryinfo.Delete(true);
                                 unZip(@"offline_update_ess.zip", zipfolder);
                             }
-                            catch (System.IO.IOException ee) { Console.WriteLine(ee.Message); }
+                            catch (System.IO.IOException ee)
+                            {
+                                Console.WriteLine(ee.Message);
+                                Environment.Exit(0);
+                            }
                         };
-                        String encoded = System.Convert.ToBase64String(System.Text.Encoding.GetEncoding("ISO-8859-1")
-                            .GetBytes($"{login.Replace(" ", string.Empty)}:{pass.Replace(" ", string.Empty)}"));
-                        client.Headers.Add("Authorization: Basic " + encoded);
-                        client.DownloadFileAsync(new Uri(@"http://download.eset.com/download/engine/ess/offline_update_ess.zip"), @"offline_update_ess.zip");
+                        try
+                        {
+                            String encoded = System.Convert.ToBase64String(System.Text.Encoding.GetEncoding("ISO-8859-1")
+                                .GetBytes($"{login.Replace(" ", string.Empty)}:{pass.Replace(" ", string.Empty)}"));
+                            client.Headers.Add("Authorization: Basic " + encoded);
+                            client.DownloadFileAsync(new Uri(@"http://download.eset.com/download/engine/ess/offline_update_ess.zip"), @"offline_update_ess.zip");
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine(e);
+                            Environment.Exit(0);
+                        }
                     }
                 }));
             }).Start();
