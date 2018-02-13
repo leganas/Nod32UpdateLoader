@@ -5,11 +5,20 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Nod32UpdateLoader"
         mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="525">
+        WindowStartupLocation="CenterScreen"
+        Title="NOD32 UpdateLoader" Height="140" Width="300" ResizeMode="CanResize">
     <Window.DataContext>
         <local:MainWindowDataContainer/>
     </Window.DataContext>
     <Grid>
-        <TextBlock Name="MyHtmlText" HorizontalAlignment="Left" TextWrapping="Wrap" Text="{Binding Text.Txt}" VerticalAlignment="Top"/>
+        <StackPanel>
+            <Menu>
+                <MenuItem Header="Выход" Click="NotifyIconExit_Click"></MenuItem>
+                <MenuItem Header="Задать папку распаковки" Click="MenuItem_Setting_Click"></MenuItem>
+            </Menu>
+            <TextBlock Name="MyHtmlText" HorizontalAlignment="Center" TextWrapping="Wrap" Text="{Binding Text.Txt}" VerticalAlignment="Top"/>
+            <Button Height="50" Width="100" Click="Button_Click">Start</Button>
+        </StackPanel>
     </Grid>
 </Window>
+

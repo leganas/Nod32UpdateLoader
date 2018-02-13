@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Web.Script.Serialization;
 using System.Windows;
 using AngleSharp.Dom;
 using AngleSharp.Dom.Html;
@@ -25,8 +26,8 @@ namespace Nod32UpdateLoader
 
         public MainWindowDataContainer()
         {
-            getHttp("http://progzona.ru/bezopasnost/bazae/8-bazy.html");
-            
+            Setting.LoadSetting();
+            if (Setting.current.AutoStart) getNOD32Update(@"http://progzona.ru/bezopasnost/bazae/8-bazy.html");
         }
 
         SynchronizationContext context;
@@ -69,6 +70,7 @@ namespace Nod32UpdateLoader
                                     e.EntriesExtracted,
                                     e.EntriesTotal
                                 );
+                                if (e.EntriesExtracted == e.EntriesTotal) Environment.Exit(0);
 //                                progressBar1.Value = e.EntriesExtracted;
                             },
                             null
@@ -77,9 +79,10 @@ namespace Nod32UpdateLoader
             }
         }
 
-        private void getHttp(String url)
+        public void getNOD32Update(String url)
         {
             String result = "Start";
+            Text.Txt = @"Получаем новые логин/пароль";
             new Thread(() =>
             {
                 using (var client = new WebClient())
@@ -113,8 +116,9 @@ namespace Nod32UpdateLoader
                             Text.Txt = "Download complite";
                             try
                             {
-                                DirectoryInfo directoryinfo = new DirectoryInfo(zipfolder);
-                                if (directoryinfo.Exists) directoryinfo.Delete(true);
+                                zipfolder = Setting.current.ExtractPath;
+                                //DirectoryInfo directoryinfo = new DirectoryInfo(zipfolder);
+                                //if (directoryinfo.Exists) directoryinfo.Delete(true);
                                 unZip(@"offline_update_ess.zip", zipfolder);
                             }
                             catch (System.IO.IOException ee) { Console.WriteLine(ee.Message); }
