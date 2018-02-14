@@ -29,7 +29,7 @@ namespace Nod32UpdateLoader
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                Loger.addLog(e.ToString(), true);
             }
 
         }
@@ -43,7 +43,7 @@ namespace Nod32UpdateLoader
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                Loger.addLog(e.ToString(), true);
             }
         }
     }   

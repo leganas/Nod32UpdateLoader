@@ -73,6 +73,7 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Loger.cs" />
     <Compile Include="Setting.cs" />
     <Compile Include="TextHttp.cs" />
     <Compile Include="MainWindow.xaml.cs">

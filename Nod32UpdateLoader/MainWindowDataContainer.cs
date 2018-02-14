@@ -34,15 +34,20 @@ namespace Nod32UpdateLoader
 
         private void unZip(String filename, String path)
         {
-            var zip = ZipFile.Read(filename);
-            zip.ExtractProgress += zip_ExtractProgress;
-//            progressBar1.Maximum = zip.Count;
-
-            context = SynchronizationContext.Current;
-            new Thread(
-                delegate () {
-                    ExtractAsync(path, zip);
-                }).Start();
+            try
+            {
+                var zip = ZipFile.Read(filename);
+                zip.ExtractProgress += zip_ExtractProgress;
+                context = SynchronizationContext.Current;
+                new Thread(
+                    delegate () {
+                        ExtractAsync(path, zip);
+                    }).Start();
+            }
+            catch (Exception e)
+            {
+                Loger.addLog(e.ToString(),true);
+            }
         }
 
         /// <summary>
@@ -52,8 +57,18 @@ namespace Nod32UpdateLoader
         /// <param name="zip">Ёкземпл€р класса ZipFile, из которого нужно произвести распаковку.</param>
         void ExtractAsync(string to, ZipFile zip)
         {
-            zip.ExtractAll(to, ExtractExistingFileAction.OverwriteSilently);
-            zip.Dispose();
+            try
+            {
+                zip.ExtractAll(to, ExtractExistingFileAction.OverwriteSilently);
+            }
+            catch (Exception e)
+            {
+                Loger.addLog(e.ToString(), true);
+            }
+            finally
+            {
+                zip.Dispose();
+            }
         }
 
         void zip_ExtractProgress(object sender, ExtractProgressEventArgs e)
@@ -71,7 +86,6 @@ namespace Nod32UpdateLoader
                                     e.EntriesTotal
                                 );
                                 if (e.EntriesExtracted == e.EntriesTotal) Environment.Exit(0);
-//                                progressBar1.Value = e.EntriesExtracted;
                             },
                             null
                         );
@@ -87,8 +101,16 @@ namespace Nod32UpdateLoader
             {
                 using (var client = new WebClient())
                 {
-                    client.Encoding = Encoding.UTF8;
-                    result = client.DownloadString(url);
+                    try
+                    {
+                        client.Encoding = Encoding.UTF8;
+                        result = client.DownloadString(url);
+                    }
+                    catch (Exception e)
+                    {
+                        Loger.addLog(e.ToString(), true);
+//                        throw;
+                    }
                 }
                 Application.Current.Dispatcher.BeginInvoke(new Action(() =>
                 {
@@ -107,7 +129,7 @@ namespace Nod32UpdateLoader
                     }
                     catch (Exception e)
                     {
-                        Console.WriteLine(e);
+                        Loger.addLog(e.ToString(),true);
                         Environment.Exit(0);
                     }
 
@@ -132,7 +154,7 @@ namespace Nod32UpdateLoader
                             }
                             catch (System.IO.IOException ee)
                             {
-                                Console.WriteLine(ee.Message);
+                                Loger.addLog(ee.ToString(), true);
                                 Environment.Exit(0);
                             }
                         };
@@ -145,7 +167,7 @@ namespace Nod32UpdateLoader
                         }
                         catch (Exception e)
                         {
-                            Console.WriteLine(e);
+                            Loger.addLog(e.ToString(), true);
                             Environment.Exit(0);
                         }
                     }
